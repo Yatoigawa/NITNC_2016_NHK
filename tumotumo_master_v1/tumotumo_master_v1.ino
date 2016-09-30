@@ -222,6 +222,8 @@ void loop() {
 
 
           //*** 左スティック 半径が閾値以上なら ***
+          // to 5th board
+          // 現在うまくいかない模様
           if (L_radius > THRESHOLD_100 && L_STICK_EFFECTIVE == 1) {
             if ( 45 <= L_deg && L_deg < 135) {
               requestMotor(B1100, B0110);
