@@ -1,3 +1,8 @@
+/*
+ *	4thボード
+ *	16/10/01 完成
+ */
+
 #define SERIAL_SPEED	115200	// シリアル通信のスピード
 #define MOTOR_NUM_MIN	9		// 最初のユニットのナンバー
 #define UNIT_MAX		3		// ドライバユニットの個数
