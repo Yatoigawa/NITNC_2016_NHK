@@ -54,11 +54,13 @@ void setup() {
 	}
 	pinMode(LED_PIN , OUTPUT);
 	digitalWrite(LED_PIN , HIGH);
+
 }
 
 void loop(){
 	if(Serial.available() > 0){
 		subBoard_data = Serial.read();
+		
 
 		motor_num = (subBoard_data >> 4);
 		motor_vel = (subBoard_data & 0b00001111);
