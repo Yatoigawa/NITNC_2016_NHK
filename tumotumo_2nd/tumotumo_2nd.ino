@@ -64,7 +64,7 @@ void loop() {
   valveBool = (data & 0b00000001);
 
   //自分の番号か確認
-  if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NUM + UNIT_MAX))) {
+  if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NO + UNIT_MAX))) {
     //処理開始
     if (valveBool) {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], HIGH);
