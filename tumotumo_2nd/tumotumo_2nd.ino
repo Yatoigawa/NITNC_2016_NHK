@@ -87,6 +87,7 @@ void loop() {
       Serial.begin(115200);
     }
   }
+  delay(10);
 }
 
 
