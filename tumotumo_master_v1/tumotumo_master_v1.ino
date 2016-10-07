@@ -1,30 +1,30 @@
 /*
-	NHK2016 本番用メインプログラム
-	SBDBT 5V使用
-	since_2016/8/2/Wed.
-	programmed by M.Seki
-	changed by Y.Utsumi
+  NHK2016 本番用メインプログラム
+  SBDBT 5V使用
+  since_2016/8/2/Wed.
+  programmed by M.Seki
+  changed by Y.Utsumi
 
-	ver ツモツモ
+  ver ツモツモ
 
-	パターン
- 	タイヤ用モータ回転速度
- 		0000	慣性による停止
- 		0001	強制停止
- 		0010	回転速度25%		A
- 		0011	回転速度25%		B
- 		0100	回転速度50%		A
- 		0101	回転速度50%		B
- 		0110	回転速度100%	A
- 		0111	回転速度100%	B
+  パターン
+  タイヤ用モータ回転速度
+	0000	慣性による停止
+	0001	強制停止
+	0010	回転速度25%		A
+	0011	回転速度25%		B
+	0100	回転速度50%		A
+	0101	回転速度50%		B
+	0110	回転速度100%	A
+	0111	回転速度100%	B
 
-	台車固定シーケンス用命令
-		1000	シーケンス開始
-				->	シーケンス開始から数sは命令通らなくなる
-		ex)	Serial.write(0b11111000);
+  台車固定シーケンス用命令
+	1000	シーケンス開始
+			->	シーケンス開始から数sは命令通らなくなる
+	ex)	Serial.write(0b11111000);
 
-		参考ページ:
-		http://easylabo.com/2015/04/arduino/8365/
+	参考ページ:
+	http://easylabo.com/2015/04/arduino/8365/
 */
 
 //*** 使用ピン設定 ***
@@ -36,7 +36,7 @@
 #define L_STICK_EFFECTIVE 1
 
 //** 一度に送ることのできる最大byte数 ****
-#define MAX_SEND_BYTE_NUM 10
+#define MAX_SEND_BYTE_NUM 15
 
 //*** アナログスティックの閾値 ***
 #define THRESHOLD_100	60
@@ -112,36 +112,7 @@ void loop() {
 
         //*** ボタン処理 ***
         if (getData[1] != 0x00 || getData[2] != 0x00) {
-          brakeCheck = 1;
           //*** 条件分岐（if文の嵐） ***
-
-          /*if (getData[2] == 0x01) { //up
-          	requestMotor(B0001, B0011);
-            }*/
-
-          /*if (getData[2] == 0x02) { //down
-          	requestMotor(B0001, B0101);
-            }*/
-
-          /*if (getData[2] == 0x03) { //start
-
-            }*/
-
-          /*if (getData[2] == 0x0C) { //select
-          	if (pushCheck == 0 && stateCheck == 0) {
-          		pushCheck = 1;
-          	}
-          	else if (pushCheck == 0 && stateCheck == 1) {
-          		pushCheck = 1;
-          	}
-            }*/
-
-          if (getData[2] == 0x04) { //right
-            requestMotor(B0001, B0111);
-          }
-          if (getData[2] == 0x08) { //left
-            requestMotor(B0001, B1001);
-          }
 
           // 前後シリンダ系
           // 前シリンダ上昇
@@ -164,19 +135,18 @@ void loop() {
           if (getData[2] == 0x20) { //cross
             requestMotor(B0010, B0010);
           }
-          if (getData[2] == 0x40) { //circle
-            //未使用
+          if (getData[1] == 0x02 && getData[2] == 0x01) { //L1&square
+            requestValve(B0011, B0001);
+            requestValve(B0100, B0001);
+            requestValve(B0101, B0001);
+            requestValve(B0110, B0001);
           }
-          if (getData[1] == 0x01) { //square
-            //未使用
+          if (getData[1] == 0x04 && getData[2] == 0x01) { //R1&square
+            requestValve(B0011, B0000);
+            requestValve(B0100, B0000);
+            requestValve(B0101, B0000);
+            requestValve(B0110, B0000);
           }
-          if (getData[1] == 0x10) { //R2
-            requestMotor(B0001, B1110);
-          }
-          if (getData[1] == 0x04) { //L2
-            requestMotor(B0001, B1111);
-          }
-
           // 特殊処理
           if (getData[1] == 0x02 && getData[2] == 0x40) { //L1&circle
             requestMotor(B1111, B1000);
@@ -185,7 +155,6 @@ void loop() {
         //*** スティック処理 ***
         else if ((getData[3] != 0x40 || getData[4] != 0x40) || (getData[5] != 0x40 || getData[6] != 0x40)) {
           brakeCheck = 1;
-
           double Lx, Ly, Rx, Ry;
           double L_radius, R_radius;
           double L_theta, R_theta;
@@ -222,6 +191,8 @@ void loop() {
 
 
           //*** 左スティック 半径が閾値以上なら ***
+          // to 5th board
+          // 現在うまくいかない模様
           if (L_radius > THRESHOLD_100 && L_STICK_EFFECTIVE == 1) {
             if ( 45 <= L_deg && L_deg < 135) {
               requestMotor(B1100, B0110);
@@ -252,8 +223,15 @@ void loop() {
               requestMotor(B1101, B0011);
             }
           }
+          else {
+            requestMotor(B1100, B0000);
+            requestMotor(B1101, B0000);
+          }
+
 
           //*** 右スティック 半径が閾値以上なら ***
+          // to 4th board
+          // 動作確認済み
           if (R_radius > THRESHOLD_100 && R_STICK_EFFECTIVE == 1) {
             if ( 45 <= R_deg && R_deg < 135) {
               requestMotor(B1010, B0110);
@@ -284,29 +262,27 @@ void loop() {
               requestMotor(B1011, B0011);
             }
           }
+          else {
+            requestMotor(B1010, B0000);
+            requestMotor(B1011, B0000);
+          }
 
         }
         //*** 何も押してないとき ***
         else {
-          pushCheck = 0;
-
-          if (brakeCheck == 0) {
-            // 他駆動系停止処理
-            requestMotor(B0000, B0000);
-            requestMotor(B0001, B0000);
-            requestMotor(B0010, B0000);
-            requestMotor(B1000, B0000);
-            requestMotor(B1110, B0000);
-            delay(50);
-          }
-          else {
-            // 車輪系慣性停止
+          if (brakeCheck) {
+            brakeCheck = 0;
             requestMotor(B1010, B0000);
             requestMotor(B1011, B0000);
             requestMotor(B1100, B0000);
             requestMotor(B1101, B0000);
-            delay(50);
-            brakeCheck = 0;
+          }
+          else{
+          	requestMotor(B0000,B0000);
+          	requestMotor(B0001,B0000);
+          	requestMotor(B0010,B0000);
+          	requestMotor(B1001,B0000);
+          	requestMotor(B1110,B0000);
           }
         }
 
@@ -329,11 +305,21 @@ void loop() {
   else {
     //***【データ受信していないとき】***
     digitalWrite(LED_PIN_2, LOW);
-    requestMotor(B0001, B0000); //オムニ
-    requestMotor(B0010, B0000); //昇降機構
-    requestMotor(B0011, B0000); //右板
-    requestMotor(B0100, B0000); //左板
-    requestLED(B1000, B1111); //LED消灯
+    requestMotor(B0000, B0000);
+    requestMotor(B0001, B0000);
+    requestMotor(B0010, B0000);
+    requestValve(B0011, B0000);
+    requestValve(B0100, B0000);
+    requestValve(B0101, B0000);
+    requestValve(B0110, B0000);
+    requestValve(B0111, B0000);
+    requestValve(B1000, B0000);
+    requestMotor(B1001, B0000);
+    requestMotor(B1010, B0000);
+    requestMotor(B1011, B0000);
+    requestMotor(B1100, B0000);
+    requestMotor(B1101, B0000); //オムニ
+    requestMotor(B1110, B0000); //昇降機構
   }
   delay(10);
 }

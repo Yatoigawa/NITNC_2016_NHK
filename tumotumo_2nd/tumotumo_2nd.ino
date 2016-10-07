@@ -16,47 +16,42 @@
   信号確認用ＬＥＤ  　  PC0
 */
 
-#define F_CPU 16000000UL
-#define DEVICE_NO	3/*	サブボードの識別番号(データ処理部No.)を入力	*/
-#define UNIT_MAX	4	/*	ドライバユニットの個数						*/
-#define PARALLEL	A4	/*	パラレル通信用のピン番号を入力(Cピン)		*/
-#define CHECK_LED	A0  /*	信号確認用のＬＥＤのピン番号を入力(Cピン)	*/
-#define VALVE_PIN0	2  //ピンD2
-#define VALVE_PIN1	3  //ピンD3
-#define VALVE_PIN2	4  //ピンD4
-#define VALVE_PIN3	5  //ピンD5
+#define SERIAL_SPEED  115200
+#define DEVICE_NO     3   /*	サブボードの識別番号(データ処理部No.)を入力	*/
+#define UNIT_MAX	    4   /*	ドライバユニットの個数						*/
+#define PARALLEL	    A4	/*	パラレル通信用のピン番号を入力(Cピン)		*/
+#define CHECK_LED	    A0  /*	信号確認用のＬＥＤのピン番号を入力(Cピン)	*/
+#define VALVE_PIN0	  2   //ピンD2
+#define VALVE_PIN1	  3   //ピンD3
+#define VALVE_PIN2	  4   //ピンD4
+#define VALVE_PIN3	  5   //ピンD5
 
 uint8_t data = 0, deviceNo, valveBool, serial_buffer;
 
-const uint8_t output_pins[] = {2, 3, 4, 5};
+const uint8_t output_pins[] = {VALVE_PIN0, VALVE_PIN1, VALVE_PIN2, VALVE_PIN3};
 int i;
 
 void setup() {
-  /*
-    DDRD = 0x0F;
-    DDRC = 0x20;
-    DDRB = 0x00;
-  */
-  pinMode(VALVE_PIN0, OUTPUT);
-  pinMode(VALVE_PIN1, OUTPUT);
-  pinMode(VALVE_PIN2, OUTPUT);
-  pinMode(VALVE_PIN3, OUTPUT);
+  for (i = 0; i < UNIT_MAX; i++) {
+    pinMode(output_pins[i], OUTPUT);
+  }
   pinMode(PARALLEL, OUTPUT);
   pinMode(CHECK_LED, OUTPUT);
 
-
   //電磁弁の出力とパラレル通信するところがHIGH、あとはLOW
-  //sei();
-  Serial.begin(115200);  //ボーレート
+  Serial.begin(SERIAL_SPEED);  //ボーレート
 
-  while (Serial.available() == 0);	/*シリアル通信が来るまで待つ*/
-  digitalWrite(CHECK_LED, HIGH);	/*通信できてることを返す*/
-  digitalWrite(PARALLEL, HIGH);
+  while (Serial.available() == 0);    /*シリアル通信が来るまで待つ*/
+  digitalWrite(CHECK_LED, HIGH);       /*通信できてることを返す*/
+
+  // パラレルによる本体への確認通信
+  // 仕様変更により不使用
+  // digitalWrite(PARALLEL, HIGH);
 }
 
 void loop() {
   //シリアル通信受信
-  if (Serial.available() != 0) {
+  if (Serial.available() > 0) {
     data = Serial.read();
   }
 
@@ -64,14 +59,16 @@ void loop() {
   valveBool = (data & 0b00000001);
 
   //自分の番号か確認
-  if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NUM + UNIT_MAX))) {
-    //処理開始
-    if (valveBool) {
+  if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NO + UNIT_MAX))) {
+    // 処理開始
+    // 電磁弁仕様により以下のプログラムを使用するかどうかを確認
+    /*if (valveBool) {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], HIGH);
-    } else {
+      } else {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], LOW);
-    }
+      }*/
   }
+
   else if (deviceNo == 0b1111) {	// 特殊処理
     if (valveBool == 0b1000) {
       // シリアル停止処理
@@ -84,9 +81,10 @@ void loop() {
       }
       // モータ側と非同期でシリアル再開
       delay(500);
-      Serial.begin(115200);
+      Serial.begin(SERIAL_SPEED);
     }
   }
+  delay(10);
 }
 
 
