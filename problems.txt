@@ -1,0 +1,1 @@
+﻿・	Serial.available() > 0　と	Serial.available() != 0	の記述の違い
