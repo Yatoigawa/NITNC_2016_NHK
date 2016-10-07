@@ -1,6 +1,6 @@
 #define SERIAL_SPEED	115200	// シリアル通信のスピード
 #define MOTOR_NUM_MIN	0		// 最初のユニットのナンバー
-#define UNIT_MAX		3		// ドライバユニットの個数
+#define UNIT_MAX		1		// ドライバユニットの個数
 #define LED_PIN			14		// 確認用LED
 
 // #define BOARD_NUM	1
@@ -60,7 +60,7 @@ void setup() {
 
 void loop() {
 	if(Serial.available() > 0){
-		subBoard_data = Serial.begin();
+		subBoard_data = Serial.read();
 
 		motor_num = (subBoard_data >> 4);
 		motor_vel = (subBoard_data & 0b00001111);

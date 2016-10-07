@@ -114,6 +114,31 @@ void loop() {
         if (getData[1] != 0x00 || getData[2] != 0x00) {
           //*** 条件分岐（if文の嵐） ***
 
+          // 1st board
+          if (getData[2] == 0x08) { // left
+            requestMotor(B0000, B0110);
+          }
+
+          if (getData[2] == 0x04) { // right
+            requestMotor(B0000, B0111);
+          }
+
+
+          // 2nd board
+          if (getData[1] == 0x02 && getData[2] == 0x01) { //L1&square
+            requestValve(B0001, B0001);
+            requestValve(B0010, B0001);
+            requestValve(B0011, B0001);
+            requestValve(B0100, B0001);
+          }
+          if (getData[1] == 0x04 && getData[2] == 0x01) { //R1&square
+            requestValve(B0001, B0000);
+            requestValve(B0010, B0000);
+            requestValve(B0011, B0000);
+            requestValve(B0100, B0000);
+          }
+
+
           // 前後シリンダ系
           // 前シリンダ上昇
           if (getData[2] == 0x10 && getData[2] == 0x01) { //triangle & up
@@ -125,28 +150,19 @@ void loop() {
           }
           // 後シリンダ上昇
           if (getData[2] == 0x20 && getData[2] == 0x01) {	//cross & up
-            requestValve(B1000, B0001);
+            requestValve(B0101, B0001);
+            requestValve(B0110, B0000);
           }
           // 後シリンダ下降
           if (getData[2] == 0x20 && getData[2] == 0x02) { //cross & down
-            requestValve(B1000, B0000);
+            requestValve(B0101, B0000);
+            requestValve(B0110, B0001);
           }
 
           if (getData[2] == 0x20) { //cross
             requestMotor(B0010, B0010);
           }
-          if (getData[1] == 0x02 && getData[2] == 0x01) { //L1&square
-            requestValve(B0011, B0001);
-            requestValve(B0100, B0001);
-            requestValve(B0101, B0001);
-            requestValve(B0110, B0001);
-          }
-          if (getData[1] == 0x04 && getData[2] == 0x01) { //R1&square
-            requestValve(B0011, B0000);
-            requestValve(B0100, B0000);
-            requestValve(B0101, B0000);
-            requestValve(B0110, B0000);
-          }
+
           // 特殊処理
           if (getData[1] == 0x02 && getData[2] == 0x40) { //L1&circle
             requestMotor(B1111, B1000);
@@ -277,12 +293,10 @@ void loop() {
             requestMotor(B1100, B0000);
             requestMotor(B1101, B0000);
           }
-          else{
-          	requestMotor(B0000,B0000);
-          	requestMotor(B0001,B0000);
-          	requestMotor(B0010,B0000);
-          	requestMotor(B1001,B0000);
-          	requestMotor(B1110,B0000);
+          else {
+            requestMotor(B0000, B0000);
+            requestMotor(B1001, B0000);
+            requestMotor(B1110, B0000);
           }
         }
 
@@ -305,18 +319,23 @@ void loop() {
   else {
     //***【データ受信していないとき】***
     digitalWrite(LED_PIN_2, LOW);
+    // 1st board - キャッチ
     requestMotor(B0000, B0000);
-    requestMotor(B0001, B0000);
-    requestMotor(B0010, B0000);
+    // 2nd board - つりざお
     requestValve(B0011, B0000);
     requestValve(B0100, B0000);
     requestValve(B0101, B0000);
     requestValve(B0110, B0000);
+    // 3rd board - 昇降機構、前進動力
+    requestValve(B0001, B0000);
+    requestValve(B0010, B0000);
     requestValve(B0111, B0000);
     requestValve(B1000, B0000);
+    // 4th board - 右車輪、船固定
     requestMotor(B1001, B0000);
     requestMotor(B1010, B0000);
     requestMotor(B1011, B0000);
+    // 5th board - 左車輪、船固定
     requestMotor(B1100, B0000);
     requestMotor(B1101, B0000); //オムニ
     requestMotor(B1110, B0000); //昇降機構

@@ -16,9 +16,9 @@
   信号確認用ＬＥＤ  　  PC0
 */
 
-#define F_CPU 16000000UL
-#define DEVICE_NO	7/*	サブボードの識別番号(データ処理部No.)を入力	*/
-#define UNIT_MAX	2	/*	ドライバユニットの個数						*/
+#define SERIAL_SPEED  115200
+#define DEVICE_NO	5/*	サブボードの識別番号(データ処理部No.)を入力	*/
+#define UNIT_MAX	4	/*	ドライバユニットの個数						*/
 #define PARALLEL	A4	/*	パラレル通信用のピン番号を入力(Cピン)		*/
 #define CHECK_LED	A0  /*	信号確認用のＬＥＤのピン番号を入力(Cピン)	*/
 #define VALVE_PIN0	2  //ピンD2
@@ -28,7 +28,9 @@
 
 uint8_t data = 0, deviceNo, valveBool, serial_buffer;
 
-const uint8_t output_pins[] = {2, 3, 4, 5};
+const uint8_t output_pins[] = {VALVE_PIN0, VALVE_PIN1, VALVE_PIN2, VALVE_PIN3};
+
+int i;
 
 void setup() {
   /*
@@ -46,7 +48,7 @@ void setup() {
 
   //電磁弁の出力とパラレル通信するところがHIGH、あとはLOW
   //sei();
-  Serial.begin(9600);  //ボーレート
+  Serial.begin(SERIAL_SPEED);  //ボーレート
 
   while (Serial.available() == 0);	/*シリアル通信が来るまで待つ*/
   digitalWrite(CHECK_LED, HIGH);	/*通信できてることを返す*/
@@ -71,6 +73,24 @@ void loop() {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], LOW);
     }
   }
+  else if (deviceNo == 0b1111) {  // 特殊処理
+    if (valveBool == 0b1000) {
+      // シリアル停止処理
+      // ないと多分バッファエラー起こすので回避するため記述
+      Serial.end();
+      digitalWrite(CHECK_LED, LOW);
+      // モータ回転開始用停止
+      delay(1000);
+      for (i = 0; i < UNIT_MAX; i++) {
+        digitalWrite(output_pins[i], HIGH);
+      }
+      // モータ側と非同期でシリアル再開
+      delay(500);
+      Serial.begin(SERIAL_SPEED);
+      digitalWrite(CHECK_LED, HIGH);
+    }
+  }
+
   delay(10);
 }
 
