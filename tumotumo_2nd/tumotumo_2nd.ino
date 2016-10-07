@@ -62,11 +62,11 @@ void loop() {
   if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NO + UNIT_MAX))) {
     // 処理開始
     // 電磁弁仕様により以下のプログラムを使用するかどうかを確認
-    /*if (valveBool) {
+    if (valveBool) {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], HIGH);
-      } else {
+    } else {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], LOW);
-      }*/
+    }
   }
 
   else if (deviceNo == 0b1111) {	// 特殊処理
