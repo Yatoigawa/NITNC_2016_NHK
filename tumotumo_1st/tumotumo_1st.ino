@@ -44,7 +44,7 @@
  * 		0111	回転速度100%	B
  */
 
-const uint8_t output_pins[] = {5, 6, 9, 10, 11, 3};		// 出力PIN
+const uint8_t output_pins[] = {9, 10, 5, 6, 11, 3};		// 出力PIN
 
 uint8_t subBoard_data, motor_num, motor_vel;
 int i;				// ループ用
