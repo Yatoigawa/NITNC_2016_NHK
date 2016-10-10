@@ -21,40 +21,25 @@
 #define UNIT_MAX	    4   /*	ドライバユニットの個数						*/
 #define PARALLEL	    A4	/*	パラレル通信用のピン番号を入力(Cピン)		*/
 #define CHECK_LED	    A0  /*	信号確認用のＬＥＤのピン番号を入力(Cピン)	*/
-#define VALVE_PIN0	  2   //ピンD2
-#define VALVE_PIN1	  3   //ピンD3
-#define VALVE_PIN2	  4   //ピンD4
-#define VALVE_PIN3	  5   //ピンD5
 
 uint8_t data = 0, deviceNo, valveBool, serial_buffer;
 
-const uint8_t output_pins[] = {VALVE_PIN0, VALVE_PIN1, VALVE_PIN2, VALVE_PIN3};
+const uint8_t output_pins[] = {2, 3, 4, 5};
 int i;
 
 void setup() {
-  for (i = 0; i < UNIT_MAX; i++) {
+  Serial.begin(SERIAL_SPEED);  //ボーレート
+  for (i = 0; i < 4; i++) {
     pinMode(output_pins[i], OUTPUT);
   }
-  pinMode(PARALLEL, OUTPUT);
   pinMode(CHECK_LED, OUTPUT);
-
-  //電磁弁の出力とパラレル通信するところがHIGH、あとはLOW
-  Serial.begin(SERIAL_SPEED);  //ボーレート
-
-  while (Serial.available() == 0);    /*シリアル通信が来るまで待つ*/
   digitalWrite(CHECK_LED, HIGH);       /*通信できてることを返す*/
-
-  // パラレルによる本体への確認通信
-  // 仕様変更により不使用
-  // digitalWrite(PARALLEL, HIGH);
 }
 
 void loop() {
-  //シリアル通信受信
   if (Serial.available() > 0) {
     data = Serial.read();
   }
-
   deviceNo = (data >> 4);
   valveBool = (data & 0b00000001);
 
@@ -62,12 +47,13 @@ void loop() {
   if ((deviceNo >= DEVICE_NO) && (deviceNo < (DEVICE_NO + UNIT_MAX))) {
     // 処理開始
     // 電磁弁仕様により以下のプログラムを使用するかどうかを確認
-    if (valveBool) {
+    if (valveBool == B0001) {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], HIGH);
     } else {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], LOW);
     }
   }
+
   delay(10);
 }
 
