@@ -1,7 +1,7 @@
 #define SERIAL_SPEED	115200	// シリアル通信のスピード
 #define MOTOR_NUM_MIN	12		// 最初のユニットのナンバー
 #define UNIT_MAX		3		// ドライバユニットの個数
-#define CATCH_TIME		4000	// 台車固定時間
+#define CATCH_TIME		5000	// 台車固定時間
 #define LED_PIN			14		// 確認用LED
 
 // #define BOARD_NUM	4
@@ -120,12 +120,16 @@ void loop() {
         digitalWrite(LED_PIN, LOW);
         // 回転方向は実物見て変えよう
         // ストール対策でかなりスピードは落としてある
-        analogWrite(output_pins[4]	, 32);
+        analogWrite(output_pins[4]	, 50);
         analogWrite(output_pins[5]	, 0);
         delay(CATCH_TIME);
-        // モータ停止処理
+        // モータ逆回転処理
         analogWrite(output_pins[4]	, 0);
-        analogWrite(output_pins[5]	, 0);
+        analogWrite(output_pins[5]	, 50);
+        delay(1000);
+        // モータ停止処理
+        analogWrite(output_pins[4]  , 0);
+        analogWrite(output_pins[5]  , 0);
         // シリアル再開処理
         // このあとすぐにデータが来ることはないと思うがもしあったらどうなるのかは保証外…
         Serial.begin(SERIAL_SPEED);
