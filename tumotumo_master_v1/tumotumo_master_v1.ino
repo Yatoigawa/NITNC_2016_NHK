@@ -40,8 +40,8 @@
 
 //*** アナログスティックの閾値 ***
 #define THRESHOLD_100	60
-#define THRESHOLD_50	40
-#define THRESHOLD_25	20
+//#define THRESHOLD_50	40
+#define THRESHOLD_25	30
 
 //*** ボーレート ***
 #define	BAUDRATE 115200
@@ -67,6 +67,10 @@ void setup() {
 
   //*** 電源LED ON ***
   digitalWrite(LED_PIN_1, HIGH);
+
+  //*** 電磁弁初期処理 ***
+  Serial.write(0b00110000);
+  Serial.write(0b01000001);
 }
 
 void loop() {
@@ -115,52 +119,54 @@ void loop() {
           //*** 条件分岐（if文の嵐） ***
 
           // 1st board
-          if (getData[2] == 0x08) { // left
+          if (getData[2] & 0x08) { // left
             requestMotor(B0000, B0110);
           }
-
-          if (getData[2] == 0x04) { // right
+          else if (getData[2] & 0x04) { // right
             requestMotor(B0000, B0111);
           }
-
+          else {
+            requestMotor(B0000, B0000);
+          }
 
           // 2nd board
-          if (getData[1] == 0x02 && getData[2] == 0x01) { //L1&square
+          if (getData[1] == (0x02 + 0x01)) { //L1&square
             requestValve(B0001, B0001);
-            requestValve(B0010, B0001);
             requestValve(B0011, B0001);
-            requestValve(B0100, B0001);
           }
-          if (getData[1] == 0x04 && getData[2] == 0x01) { //R1&square
+          if (getData[1] == (0x08 + 0x01)) { //R1&square
             requestValve(B0001, B0000);
-            requestValve(B0010, B0000);
             requestValve(B0011, B0000);
+          }
+          // 前後シリンダ系
+          // 後シリンダ上昇
+          /*if (getData[2] == (0x10 + 0x01)) { //triangle & up
+            requestValve(B0011, B0001);
             requestValve(B0100, B0000);
           }
+          // 後シリンダ下降
+          if (getData[2] == (0x10 + 0x02)) { //triangle & down
+            requestValve(B0011, B0000);
+            requestValve(B0100, B0001);
+          }*/
 
-
+          // 3rd board
+          
           // 前後シリンダ系
           // 前シリンダ上昇
-          if (getData[2] == 0x10 && getData[2] == 0x01) { //triangle & up
+          // ex対応
+          // つりざお
+          if (getData[2] == (0x20 + 0x01)) {	//cross & up
+            requestValve(B0110, B0001);
             requestValve(B0111, B0001);
           }
+          
           // 前シリンダ下降
-          if (getData[2] == 0x10 && getData[2] == 0x02) { //triangle & down
-            requestValve(B0111, B0000);
-          }
-          // 後シリンダ上昇
-          if (getData[2] == 0x20 && getData[2] == 0x01) {	//cross & up
-            requestValve(B0101, B0001);
+          // ex対応
+          // つりざお
+          if (getData[2] == (0x20 + 0x02)) { //cross & down
             requestValve(B0110, B0000);
-          }
-          // 後シリンダ下降
-          if (getData[2] == 0x20 && getData[2] == 0x02) { //cross & down
-            requestValve(B0101, B0000);
-            requestValve(B0110, B0001);
-          }
-
-          if (getData[2] == 0x20) { //cross
-            requestMotor(B0010, B0010);
+            requestValve(B0111, B0000);
           }
 
           // 特殊処理
@@ -208,34 +214,33 @@ void loop() {
 
           //*** 左スティック 半径が閾値以上なら ***
           // to 5th board
-          // 現在うまくいかない模様
           if (L_radius > THRESHOLD_100 && L_STICK_EFFECTIVE == 1) {
             if ( 45 <= L_deg && L_deg < 135) {
-              requestMotor(B1100, B0110);
+              requestMotor(B1100, B0111);
               requestMotor(B1101, B0110);
             }
             else if ( 225 <= L_deg && L_deg < 315 ) {
-              requestMotor(B1100, B0111);
+              requestMotor(B1100, B0110);
               requestMotor(B1101, B0111);
             }
           }
-          else if (L_radius > THRESHOLD_50 && L_STICK_EFFECTIVE == 1) {
+          /*else if (L_radius > THRESHOLD_50 && L_STICK_EFFECTIVE == 1) {
             if ( 45 <= L_deg && L_deg < 135) {
-              requestMotor(B1100, B0100);
+              requestMotor(B1100, B0101);
               requestMotor(B1101, B0100);
             }
             else if ( 225 <= L_deg && L_deg < 315 ) {
-              requestMotor(B1100, B0101);
+              requestMotor(B1100, B0100);
               requestMotor(B1101, B0101);
             }
-          }
+            }*/
           else if (L_radius > THRESHOLD_25 && L_STICK_EFFECTIVE == 1) {
             if ( 45 <= L_deg && L_deg < 135) {
-              requestMotor(B1100, B0010);
+              requestMotor(B1100, B0011);
               requestMotor(B1101, B0010);
             }
             else if ( 225 <= L_deg && L_deg < 315 ) {
-              requestMotor(B1100, B0011);
+              requestMotor(B1100, B0010);
               requestMotor(B1101, B0011);
             }
           }
@@ -250,32 +255,32 @@ void loop() {
           // 動作確認済み
           if (R_radius > THRESHOLD_100 && R_STICK_EFFECTIVE == 1) {
             if ( 45 <= R_deg && R_deg < 135) {
-              requestMotor(B1010, B0110);
-              requestMotor(B1011, B0110);
-            }
-            else if ( 225 <= R_deg && R_deg < 315 ) {
               requestMotor(B1010, B0111);
               requestMotor(B1011, B0111);
             }
-          }
-          else if (R_radius > THRESHOLD_50 && R_STICK_EFFECTIVE == 1) {
-            if ( 45 <= R_deg && R_deg < 135) {
-              requestMotor(B1010, B0100);
-              requestMotor(B1011, B0100);
-            }
             else if ( 225 <= R_deg && R_deg < 315 ) {
+              requestMotor(B1010, B0110);
+              requestMotor(B1011, B0110);
+            }
+          }
+          /*else if (R_radius > THRESHOLD_50 && R_STICK_EFFECTIVE == 1) {
+            if ( 45 <= R_deg && R_deg < 135) {
               requestMotor(B1010, B0101);
               requestMotor(B1011, B0101);
             }
-          }
+            else if ( 225 <= R_deg && R_deg < 315 ) {
+              requestMotor(B1010, B0100);
+              requestMotor(B1011, B0100);
+            }
+            }4*/
           else if (R_radius > THRESHOLD_25 && R_STICK_EFFECTIVE == 1) {
             if ( 45 <= R_deg && R_deg < 135) {
-              requestMotor(B1010, B0010);
-              requestMotor(B1011, B0010);
-            }
-            else if ( 225 <= R_deg && R_deg < 315 ) {
               requestMotor(B1010, B0011);
               requestMotor(B1011, B0011);
+            }
+            else if ( 225 <= R_deg && R_deg < 315 ) {
+              requestMotor(B1010, B0010);
+              requestMotor(B1011, B0010);
             }
           }
           else {
@@ -322,15 +327,13 @@ void loop() {
     // 1st board - キャッチ
     requestMotor(B0000, B0000);
     // 2nd board - つりざお
-    requestValve(B0011, B0000);
-    requestValve(B0100, B0000);
-    requestValve(B0101, B0000);
-    requestValve(B0110, B0000);
-    // 3rd board - 昇降機構、前進動力
     requestValve(B0001, B0000);
     requestValve(B0010, B0000);
-    requestValve(B0111, B0000);
-    requestValve(B1000, B0000);
+    requestValve(B0011, B0000);
+    requestValve(B0100, B0000);
+    // 3rd board - 昇降機構、前進動力
+    requestValve(B0101, B0000);
+    requestValve(B0110, B0000);
     // 4th board - 右車輪、船固定
     requestMotor(B1001, B0000);
     requestMotor(B1010, B0000);
