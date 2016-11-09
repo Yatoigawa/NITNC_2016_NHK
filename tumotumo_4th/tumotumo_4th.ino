@@ -1,7 +1,7 @@
 #define SERIAL_SPEED	115200	// シリアル通信のスピード
 #define MOTOR_NUM_MIN	9		// 最初のユニットのナンバー
 #define UNIT_MAX		3		// ドライバユニットの個数
-#define CATCH_TIME		4000	// 台車固定時間
+#define CATCH_TIME		5000	// 台車固定時間
 #define LED_PIN			14		// 確認用LED
 
 // #define BOARD_NUM	4
@@ -13,13 +13,13 @@
   	ボード2	電磁弁
   		1:  つりざお1
   		2:  つりざお2
-  		3:  つりざお3
-  		4:  つりざお4
+      3:  つりざおex
+      4:  つりざおex
   	ボード3	電磁弁
-      5:  後昇降1
-      6:  後昇降2
-  		7:  前昇降
-  		8:	前進動力
+      5:  前進動力
+      6:
+  		7:  後昇降
+  		8:	前昇降
   	ボード4	モータ
   		9:	船固定用モータ
   		10:	右後車輪
@@ -122,12 +122,16 @@ void loop() {
         digitalWrite(LED_PIN, LOW);
         // 回転方向は実物見て変えよう
         // ストール対策でかなりスピードは落としてある
-        analogWrite(output_pins[0]	, 32);
+        analogWrite(output_pins[0]	, 128);
         analogWrite(output_pins[1]	, 0);
         delay(CATCH_TIME);
-        // モータ停止処理
+        // モータ逆回転処理
         analogWrite(output_pins[0]	, 0);
-        analogWrite(output_pins[1]	, 0);
+        analogWrite(output_pins[1]	, 100);
+        delay(2000);
+        // モータ停止処理
+        analogWrite(output_pins[0]  , 0);
+        analogWrite(output_pins[1]  , 0);
         // シリアル再開処理
         // このあとすぐにデータが来ることはないと思うがもしあったらどうなるのかは保証外…
         Serial.begin(SERIAL_SPEED);
@@ -137,6 +141,11 @@ void loop() {
             このままで動く場合には前輪/後輪を1,1でロックしてみる
         */
       }
+    }
+  }
+  else {
+    for (i = 0; i < 6; i++) {
+      analogWrite(output_pins[i]  , 0 );
     }
   }
   delay(10);

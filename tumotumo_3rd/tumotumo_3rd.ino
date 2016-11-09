@@ -18,13 +18,13 @@
 
 #define SERIAL_SPEED  115200
 #define DEVICE_NO	5/*	サブボードの識別番号(データ処理部No.)を入力	*/
-#define UNIT_MAX	2	/*	ドライバユニットの個数						*/
+#define UNIT_MAX	4	/*	ドライバユニットの個数						*/
 #define PARALLEL	A4	/*	パラレル通信用のピン番号を入力(Cピン)		*/
 #define CHECK_LED	A0  /*	信号確認用のＬＥＤのピン番号を入力(Cピン)	*/
-#define VALVE_PIN0	2  //ピンD2
-#define VALVE_PIN1	3  //ピンD3
-#define VALVE_PIN2	4  //ピンD4
-#define VALVE_PIN3	5  //ピンD5
+#define VALVE_PIN0	3   //ピンD2
+#define VALVE_PIN1  11  //ピンD3
+#define VALVE_PIN2	10  //ピンD4
+#define VALVE_PIN3	9   //ピンD5
 
 uint8_t data = 0, deviceNo, valveBool, serial_buffer, exception;
 
@@ -64,6 +64,7 @@ void loop() {
     //処理開始
     if (valveBool == 0b0001) {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], HIGH);
+      
     } else {
       digitalWrite(output_pins[deviceNo - DEVICE_NO], LOW);
     }
@@ -77,20 +78,20 @@ void loop() {
       digitalWrite(CHECK_LED, LOW);
       // モータ回転開始用停止
       delay(2000);
-      // デバイス6
-      digitalWrite(output_pins[1], HIGH);
+        // デバイス6
+      digitalWrite(output_pins[0], HIGH);
       // モータ側と非同期でシリアル再開
       delay(1000);
-      digitalWrite(output_pins[1], LOW);
-      delay(500);
+      digitalWrite(output_pins[0], LOW);
+      delay(2000);
       Serial.begin(SERIAL_SPEED);
       digitalWrite(CHECK_LED, HIGH);
       
       data = 0;
     }
   }
-
   delay(10);
+  
 }
 
 

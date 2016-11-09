@@ -120,13 +120,13 @@ void loop() {
         digitalWrite(LED_PIN, LOW);
         // 回転方向は実物見て変えよう
         // ストール対策でかなりスピードは落としてある
-        analogWrite(output_pins[4]	, 50);
-        analogWrite(output_pins[5]	, 0);
+        analogWrite(output_pins[4]	, 0);
+        analogWrite(output_pins[5]	, 128);
         delay(CATCH_TIME);
         // モータ逆回転処理
-        analogWrite(output_pins[4]	, 0);
-        analogWrite(output_pins[5]	, 50);
-        delay(1000);
+        analogWrite(output_pins[4]	, 100);
+        analogWrite(output_pins[5]	, 0);
+        delay(2000);
         // モータ停止処理
         analogWrite(output_pins[4]  , 0);
         analogWrite(output_pins[5]  , 0);

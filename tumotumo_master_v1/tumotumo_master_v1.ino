@@ -50,7 +50,7 @@ int requestSendDataNum = 0; //現時点での送信データ数
 byte getData[8];
 byte sendData[MAX_SEND_BYTE_NUM];
 int brakeCheck		= 0;	// (1,1)で停止させるフラグ
-int pushCheck		= 0;	// 押されているか、離されてるか
+int pushCheck		  = 0;	// 押されているか、離されてるか
 int stateCheck		= 0;	// フラグの状態
 // int upDown_state	= 0;	// エアシリンダの上下フラグ
 
@@ -129,48 +129,45 @@ void loop() {
             requestMotor(B0000, B0000);
           }
 
-          // 2nd board
+          // 2nd board 12V系統
+          // つりざお
           if (getData[1] == (0x02 + 0x01)) { //L1&square
             requestValve(B0001, B0001);
+            requestValve(B0010, B0001);
             requestValve(B0011, B0001);
+            requestValve(B0100, B0001);
           }
           if (getData[1] == (0x08 + 0x01)) { //R1&square
             requestValve(B0001, B0000);
+            requestValve(B0010, B0000);
             requestValve(B0011, B0000);
-          }
-          // 前後シリンダ系
-          // 後シリンダ上昇
-          /*if (getData[2] == (0x10 + 0x01)) { //triangle & up
-            requestValve(B0011, B0001);
             requestValve(B0100, B0000);
           }
-          // 後シリンダ下降
-          if (getData[2] == (0x10 + 0x02)) { //triangle & down
-            requestValve(B0011, B0000);
-            requestValve(B0100, B0001);
-          }*/
 
-          // 3rd board
-          
+          // 3rd board 24V系統
+
           // 前後シリンダ系
           // 前シリンダ上昇
-          // ex対応
-          // つりざお
-          if (getData[2] == (0x20 + 0x01)) {	//cross & up
-            requestValve(B0110, B0001);
+          if ((getData[2] & 0x10) && (getData[2] & 0x01)) {	//triangle & up
+            requestValve(B1000, B0001);
+          }
+          // 前シリンダ下降
+          if ((getData[2] & 0x10) && (getData[2] & 0x02)) { //triangle & down
+            requestValve(B1000, B0000);
+          }
+
+          // 後シリンダ上昇
+          if ((getData[2] & 0x20) && (getData[2] & 0x01)) { //cross & up
             requestValve(B0111, B0001);
           }
-          
-          // 前シリンダ下降
-          // ex対応
-          // つりざお
-          if (getData[2] == (0x20 + 0x02)) { //cross & down
-            requestValve(B0110, B0000);
+          // 後シリンダ下降
+          if ((getData[2] & 0x20) && (getData[2] & 0x02)) { //cross & down
             requestValve(B0111, B0000);
           }
 
+
           // 特殊処理
-          if (getData[1] == 0x02 && getData[2] == 0x40) { //L1&circle
+          if ((getData[1] & 0x02) && (getData[2] & 0x40)) { //L1&circle
             requestMotor(B1111, B1000);
           }
         }
